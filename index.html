@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Control - Bomberos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <div class="login-card">
+            <div class="login-logo">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZDMzZjJmIiBkPSJNMjU2IDUxMmMtNjguMzggMC0xMzIuNy0yNi42OS0xODAuOTktNzQuOTlTMCAzMjQuMzggMCAyNTZTMjYuNjkgMTIzLjMgNzQuOTkgNzQuOTlTMTg3LjYyIDAgMjU2IDBzMTMyLjcgMjYuNjkgMTgwLjk5IDc0Ljk5UzUxMiAxODcuNjIgNTEyIDI1NnMtMjYuNjkgMTMyLjctNzQuOTkgMTgwLjk5UzMyNC4zOCA1MTIgMjU2IDUxMnpNMTQ0IDI3Mmg3MnY3MmgtNzJWMjcyem0xNTIgMGg3MnY3MmgtNzJWMjcyeiIvPjwvc3ZnPg==" alt="Logo Bomberos">
+                <h1>Cuartel de Bomberos</h1>
+            </div>
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form" class="compact-form">
+                <div class="form-group">
+                    <label for="login-user"><i class="fas fa-user"></i> Usuario</label>
+                    <input type="text" id="login-user" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock"></i> Contraseña</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn-block"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
+            </form>
+            <div id="login-error" class="alert alert-danger hidden mt-20">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="login-error-text"></span>
+            </div>
+            
+            <div class="mt-20" style="font-size: 14px; color: var(--gray);">
+                <p><strong>Usuario demo:</strong> admin | <strong>Contraseña:</strong> 1234</p>
+                <p><strong>Usuario bombero:</strong> jperez | <strong>Contraseña:</strong> clave123</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main System - Bombero View -->
+    <div id="main-system" class="hidden">
+        <header>
+            <div class="container header-content">
+                <div class="logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZDMzZjJmIiBkPSJNMjU2IDUxMmMtNjguMzggMC0xMzIuNy0yNi42OS0xODAuOTktNzQuOTlTMCAzMjQuMzggMCAyNTZTMjYuNjkgMTIzLjMgNzQuOTkgNzQuOTlTMTg3LjYyIDAgMjU2IDBzMTMyLjcgMjYuNjkgMTgwLjk5IDc0Ljk5UzUxMiAxODcuNjIgNTEyIDI1NnMtMjYuNjkgMTMyLjctNzQuOTkgMTgwLjk5UzMyNC4zOCA1MTIgMjU2IDUxMnpNMTQ0IDI3Mmg3MnY3MmgtNzJWMjcyem0xNTIgMGg3MnY3MmgtNzJWMjcyeiIvPjwvc3ZnPg==" alt="Logo Bomberos">
+                    <h1>Control de Horas</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-details">
+                        <p class="user-name" id="user-name">Usuario: [Nombre]</p>
+                        <p class="user-rank" id="user-rank">Rango: [Rango]</p>
+                    </div>
+                    <button id="logout-btn" class="btn-sm"><i class="fas fa-sign-out-alt"></i> Salir</button>
+                </div>
+            </div>
+        </header>
+        
+        <nav class="main-nav">
+            <div class="container">
+                <ul class="nav-links">
+                    <li><a href="#dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#ingreso" class="nav-link"><i class="fas fa-sign-in-alt"></i> Registro Ingreso</a></li>
+                    <li><a href="#salida" class="nav-link"><i class="fas fa-sign-out-alt"></i> Registro Salida</a></li>
+                    <li><a href="#historial" class="nav-link"><i class="fas fa-history"></i> Mi Historial</a></li>
+                </ul>
+            </div>
+        </nav>
+        
+        <main class="container">
+            <div id="alert-container"></div>
+            
+            <!-- Secciones del sistema bombero -->
+            <section id="dashboard" class="tab-content">
+                <!-- Contenido del dashboard -->
+            </section>
+            
+            <section id="ingreso" class="tab-content hidden">
+                <!-- Formulario de ingreso -->
+            </section>
+            
+            <section id="salida" class="tab-content hidden">
+                <!-- Formulario de salida -->
+            </section>
+            
+            <section id="historial" class="tab-content hidden">
+                <!-- Historial personal -->
+            </section>
+        </main>
+        
+        <footer>
+            <div class="container">
+                <p>Sistema de Control de Horas - Cuartel de Bomberos &copy; 2023</p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Admin System -->
+    <div id="admin-system" class="admin-panel hidden">
+        <!-- Contenido del panel de administración -->
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/registro.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
