@@ -1,0 +1,10 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "legajo": "B001",
+      "nombre": "Juan Pérez",
+      "rango": "Bombero",
+      "usuario": "jperez",
+      "password": "clave123",
+      "email": "
