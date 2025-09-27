@@ -5,8 +5,693 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Control - Bomberos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <style>
+        :root {
+            --primary: #d32f2f;
+            --primary-dark: #b71c1c;
+            --primary-light: #ff6659;
+            --secondary: #ffa000;
+            --light: #f5f5f5;
+            --dark: #263238;
+            --gray: #78909c;
+            --success: #43a047;
+            --warning: #ffb300;
+            --danger: #e53935;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            --hover-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Login Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+        
+        .login-logo {
+            margin-bottom: 30px;
+        }
+        
+        .login-logo img {
+            height: 80px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+        
+        .login-logo h1 {
+            color: var(--primary);
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+            background: white;
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(211, 47, 47, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(211, 47, 47, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button i {
+            margin-right: 8px;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #78909c 0%, #546e7a 100%);
+            box-shadow: 0 4px 6px rgba(120, 144, 156, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 6px 12px rgba(120, 144, 156, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #2e7d32 100%);
+            box-shadow: 0 4px 6px rgba(67, 160, 71, 0.2);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #f57f17 100%);
+            color: #212529;
+            box-shadow: 0 4px 6px rgba(255, 179, 0, 0.2);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #c62828 100%);
+            box-shadow: 0 4px 6px rgba(229, 57, 53, 0.2);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            box-shadow: none;
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 10px 18px;
+            font-size: 14px;
+        }
+        
+        .btn-block {
+            width: 100%;
+        }
+        
+        /* Header Styles */
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 42px;
+            margin-right: 12px;
+        }
+        
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-details p {
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .user-rank {
+            color: var(--gray);
+            font-size: 13px;
+        }
+        
+        /* Navigation */
+        .main-nav {
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            padding: 0;
+        }
+        
+        .nav-links li {
+            margin-right: 2px;
+        }
+        
+        .nav-links a {
+            color: var(--dark);
+            text-decoration: none;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-links a i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+            background: #fafafa;
+            border-bottom-color: var(--primary);
+        }
+        
+        /* Main Content */
+        main {
+            padding: 30px 0;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .card h2 {
+            margin-bottom: 20px;
+            color: var(--dark);
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card h2 i {
+            margin-right: 12px;
+            color: var(--primary);
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+        }
+        
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Alerts */
+        .alert {
+            padding: 16px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid;
+        }
+        
+        .alert i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        
+        .alert-warning {
+            background-color: #fff8e1;
+            border-left-color: var(--warning);
+            color: #7d6608;
+        }
+        
+        .alert-success {
+            background-color: #e8f5e9;
+            border-left-color: var(--success);
+            color: #2e7d32;
+        }
+        
+        .alert-danger {
+            background-color: #ffebee;
+            border-left-color: var(--danger);
+            color: #c62828;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Tabs */
+        .tab-container {
+            margin-top: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 24px;
+        }
+        
+        .tab {
+            padding: 14px 28px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: var(--gray);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            padding: 10px 0;
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-warning {
+            background-color: var(--warning);
+            color: #212529;
+        }
+        
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .badge-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .badge-info {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .notification-badge {
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-top: 4px solid var(--primary);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .stat-card i {
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+        
+        .stat-card h3 {
+            font-size: 32px;
+            margin: 10px 0;
+            color: var(--dark);
+            font-weight: 700;
+        }
+        
+        .stat-card p {
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 24px 0;
+            margin-top: 40px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .nav-links a {
+                padding: 14px 18px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+            
+            .user-info {
+                justify-content: center;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-links li {
+                margin: 4px;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 30px 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .mb-0 {
+            margin-bottom: 0;
+        }
+        
+        .mt-20 {
+            margin-top: 20px;
+        }
+        
+        .mt-30 {
+            margin-top: 30px;
+        }
+        
+        .d-flex {
+            display: flex;
+        }
+        
+        .align-center {
+            align-items: center;
+        }
+        
+        .justify-between {
+            justify-content: space-between;
+        }
+        
+        .w-100 {
+            width: 100%;
+        }
+        
+        /* Admin Specific Styles */
+        .admin-panel {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        
+        .admin-header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 16px 0;
+        }
+        
+        .admin-nav {
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .admin-nav .nav-links a {
+            color: var(--dark);
+        }
+        
+        .admin-nav .nav-links a.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        /* Compact Form Styles */
+        .compact-form .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .compact-form label {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        
+        .compact-form input, .compact-form select, .compact-form textarea {
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+        
+        /* Minimalist Table */
+        .minimalist-table {
+            border: none;
+        }
+        
+        .minimalist-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 14px 16px;
+        }
+        
+        .minimalist-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .minimalist-table tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
 </head>
 <body>
     <!-- Login Screen -->
@@ -16,7 +701,7 @@
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZDMzZjJmIiBkPSJNMjU2IDUxMmMtNjguMzggMC0xMzIuNy0yNi42OS0xODAuOTktNzQuOTlTMCAzMjQuMzggMCAyNTZTMjYuNjkgMTIzLjMgNzQuOTkgNzQuOTlTMTg3LjYyIDAgMjU2IDBzMTMyLjcgMjYuNjkgMTgwLjk5IDc0Ljk5UzUxMiAxODcuNjIgNTEyIDI1NnMtMjYuNjkgMTMyLjctNzQuOTkgMTgwLjk5UzMyNC4zOCA1MTIgMjU2IDUxMnpNMTQ0IDI3Mmg3MnY3MmgtNzJWMjcyem0xNTIgMGg3MnY3MmgtNzJWMjcyeiIvPjwvc3ZnPg==" alt="Logo Bomberos">
                 <h1>Cuartel de Bomberos</h1>
             </div>
-            <h2>Iniciar Sesión</h2>
+            <h2 style="margin-bottom: 30px; color: var(--dark);">Iniciar Sesión</h2>
             <form id="login-form" class="compact-form">
                 <div class="form-group">
                     <label for="login-user"><i class="fas fa-user"></i> Usuario</label>
@@ -72,21 +757,142 @@
         <main class="container">
             <div id="alert-container"></div>
             
-            <!-- Secciones del sistema bombero -->
+            <!-- Dashboard -->
             <section id="dashboard" class="tab-content">
-                <!-- Contenido del dashboard -->
+                <div class="card">
+                    <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="fas fa-user-clock"></i>
+                            <h3 id="horas-mes">0</h3>
+                            <p>Horas Este Mes</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-calendar-check"></i>
+                            <h3 id="dias-trabajados">0</h3>
+                            <p>Días Trabajados</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-fire"></i>
+                            <h3 id="guardias-completadas">0</h3>
+                            <p>Guardias Completadas</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i class="fas fa-user-clock"></i> Estado Actual</h3>
+                        <div id="estado-actual" class="mt-20">
+                            <p><i class="fas fa-info-circle"></i> No tienes un registro de guardia activo.</p>
+                        </div>
+                    </div>
+                </div>
             </section>
             
+            <!-- Registro de Ingreso -->
             <section id="ingreso" class="tab-content hidden">
-                <!-- Formulario de ingreso -->
+                <div class="card">
+                    <h2><i class="fas fa-sign-in-alt"></i> Registro de Ingreso</h2>
+                    <form id="ingreso-form" class="compact-form">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="legajo"><i class="fas fa-id-card"></i> Legajo</label>
+                                <input type="text" id="legajo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="actividad"><i class="fas fa-tasks"></i> Actividad</label>
+                                <select id="actividad" required>
+                                    <option value="">Seleccione una actividad</option>
+                                    <option value="1">Patrulla</option>
+                                    <option value="2">Guardia</option>
+                                    <option value="3">Entrenamiento</option>
+                                    <option value="4">Mantenimiento</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tipo-convocatoria"><i class="fas fa-calendar-alt"></i> Tipo</label>
+                            <select id="tipo-convocatoria" required>
+                                <option value="convocatoria">Convocatoria</option>
+                                <option value="guardia">Guardia Programada</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="observaciones-ingreso"><i class="fas fa-sticky-note"></i> Observaciones</label>
+                            <textarea id="observaciones-ingreso" rows="2" placeholder="Observaciones adicionales..."></textarea>
+                        </div>
+                        <button type="submit"><i class="fas fa-check"></i> Registrar Ingreso</button>
+                    </form>
+                </div>
             </section>
             
+            <!-- Registro de Salida -->
             <section id="salida" class="tab-content hidden">
-                <!-- Formulario de salida -->
+                <div class="card">
+                    <h2><i class="fas fa-sign-out-alt"></i> Registro de Salida</h2>
+                    <p style="margin-bottom: 20px; color: var(--gray);">Complete el formulario antes de retirarse</p>
+                    <form id="salida-form" class="compact-form">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="legajo-salida"><i class="fas fa-id-card"></i> Legajo</label>
+                                <input type="text" id="legajo-salida" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="movil-asignado"><i class="fas fa-truck"></i> Móvil Asignado</label>
+                                <select id="movil-asignado" required>
+                                    <option value="">Seleccione un móvil</option>
+                                    <option value="1">Unidad 1 - Bomba</option>
+                                    <option value="2">Unidad 2 - Bomba</option>
+                                    <option value="3">Unidad 3 - Escalera</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="estado-movil"><i class="fas fa-car-crash"></i> Estado del Móvil</label>
+                            <select id="estado-movil" required>
+                                <option value="">Seleccione el estado</option>
+                                <option value="optimo">Óptimo</option>
+                                <option value="mantenimiento">Requiere Mantenimiento</option>
+                                <option value="reparacion">En Reparación</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="observaciones"><i class="fas fa-sticky-note"></i> Observaciones</label>
+                            <textarea id="observaciones" rows="3" placeholder="Detalles sobre el estado del móvil..."></textarea>
+                        </div>
+                        <button type="submit"><i class="fas fa-paper-plane"></i> Registrar Salida</button>
+                    </form>
+                </div>
             </section>
             
+            <!-- Historial -->
             <section id="historial" class="tab-content hidden">
-                <!-- Historial personal -->
+                <div class="card">
+                    <h2><i class="fas fa-history"></i> Mi Historial</h2>
+                    <div class="d-flex justify-between align-center mt-20">
+                        <div>
+                            <label for="filtro-fecha-historial">Filtrar por fecha: </label>
+                            <input type="month" id="filtro-fecha-historial">
+                        </div>
+                    </div>
+                    <div class="table-container mt-20">
+                        <table class="minimalist-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Actividad</th>
+                                    <th>Hora Ingreso</th>
+                                    <th>Hora Salida</th>
+                                    <th>Horas</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historial-table-body">
+                                <!-- Los datos se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
         </main>
         
@@ -99,16 +905,961 @@
     
     <!-- Admin System -->
     <div id="admin-system" class="admin-panel hidden">
-        <!-- Contenido del panel de administración -->
+        <header class="admin-header">
+            <div class="container header-content">
+                <div class="logo">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZDMzZjJmIiBkPSJNMjU2IDUxMmMtNjguMzggMC0xMzIuNy0yNi42OS0xODAuOTktNzQuOTlTMCAzMjQuMzggMCAyNTZTMjYuNjkgMTIzLjMgNzQuOTkgNzQuOTlTMTg3LjYyIDAgMjU2IDBzMTMyLjcgMjYuNjkgMTgwLjk5IDc0Ljk5UzUxMiAxODcuNjIgNTEyIDI1NnMtMjYuNjkgMTMyLjctNzQuOTkgMTgwLjk5UzMyNC4zOCA1MTIgMjU2IDUxMnpNMTQ0IDI3Mmg3MnY3MmgtNzJWMjcyem0xNTIgMGg3MnY3MmgtNzJWMjcyeiIvPjwvc3ZnPg==" alt="Logo Bomberos">
+                    <h1>Panel de Administración</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-details">
+                        <p class="user-name" id="admin-user-name">Administrador</p>
+                        <p class="user-rank">Panel de Control</p>
+                    </div>
+                    <button id="admin-logout-btn" class="btn-sm"><i class="fas fa-sign-out-alt"></i> Salir</button>
+                </div>
+            </div>
+        </header>
+        
+        <nav class="admin-nav">
+            <div class="container">
+                <ul class="nav-links">
+                    <li><a href="#admin-dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#admin-personal" class="nav-link"><i class="fas fa-users"></i> Gestión de Personal</a></li>
+                    <li><a href="#admin-historico" class="nav-link"><i class="fas fa-clipboard-list"></i> Histórico Completo</a></li>
+                    <li><a href="#admin-alertas" class="nav-link"><i class="fas fa-bell"></i> Alertas <span id="admin-notification-count" class="notification-badge hidden">0</span></a></li>
+                </ul>
+            </div>
+        </nav>
+        
+        <main class="container">
+            <div id="admin-alert-container"></div>
+            
+            <!-- Admin Dashboard -->
+            <section id="admin-dashboard" class="tab-content">
+                <div class="card">
+                    <h2><i class="fas fa-tachometer-alt"></i> Dashboard de Administración</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="fas fa-users"></i>
+                            <h3 id="admin-total-personal">0</h3>
+                            <p>Personal Activo</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-user-clock"></i>
+                            <h3 id="admin-personal-activo">0</h3>
+                            <p>En Guardia Actualmente</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3 id="admin-alertas-pendientes">0</h3>
+                            <p>Alertas Pendientes</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-chart-line"></i>
+                            <h3 id="admin-horas-totales">0</h3>
+                            <p>Horas Este Mes</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="card">
+                        <h3><i class="fas fa-user-check"></i> Personal en Guardia</h3>
+                        <div class="table-container mt-20">
+                            <table class="minimalist-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Actividad</th>
+                                        <th>Hora Ingreso</th>
+                                        <th>Horas</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-personal-guardia">
+                                    <!-- Los datos se cargarán dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i class="fas fa-history"></i> Actividad Reciente</h3>
+                        <div class="table-container mt-20">
+                            <table class="minimalist-table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Acción</th>
+                                        <th>Hora</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-actividad-reciente">
+                                    <!-- Los datos se cargarán dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Gestión de Personal -->
+            <section id="admin-personal" class="tab-content hidden">
+                <div class="card">
+                    <h2><i class="fas fa-users"></i> Gestión de Personal</h2>
+                    <div class="d-flex justify-between align-center mt-20">
+                        <button id="admin-add-user-btn" class="btn-success"><i class="fas fa-user-plus"></i> Agregar Usuario</button>
+                        <div>
+                            <input type="text" id="admin-buscar-usuario" placeholder="Buscar por nombre o legajo..." style="padding: 10px; width: 250px; border-radius: 6px; border: 1px solid #e0e0e0;">
+                        </div>
+                    </div>
+                    <div class="table-container mt-20">
+                        <table class="minimalist-table">
+                            <thead>
+                                <tr>
+                                    <th>Legajo</th>
+                                    <th>Nombre</th>
+                                    <th>Rango</th>
+                                    <th>Usuario</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-personal-table">
+                                <!-- Los datos se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Histórico Completo -->
+            <section id="admin-historico" class="tab-content hidden">
+                <div class="card">
+                    <h2><i class="fas fa-clipboard-list"></i> Histórico Completo</h2>
+                    <div class="grid-3 mt-20">
+                        <div class="form-group">
+                            <label for="admin-filtro-usuario">Filtrar por usuario</label>
+                            <select id="admin-filtro-usuario">
+                                <option value="">Todos los usuarios</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-filtro-fecha">Filtrar por fecha</label>
+                            <input type="date" id="admin-filtro-fecha">
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-filtro-actividad">Filtrar por actividad</label>
+                            <select id="admin-filtro-actividad">
+                                <option value="">Todas las actividades</option>
+                                <option value="1">Patrulla</option>
+                                <option value="2">Guardia</option>
+                                <option value="3">Entrenamiento</option>
+                                <option value="4">Mantenimiento</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-right mt-20">
+                        <button id="admin-aplicar-filtros" class="btn-secondary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                    </div>
+                    <div class="table-container mt-20">
+                        <table class="minimalist-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Legajo</th>
+                                    <th>Nombre</th>
+                                    <th>Actividad</th>
+                                    <th>Horas</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-historico-table">
+                                <!-- Los datos se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Alertas -->
+            <section id="admin-alertas" class="tab-content hidden">
+                <div class="card">
+                    <h2><i class="fas fa-bell"></i> Sistema de Alertas</h2>
+                    <div class="table-container mt-20">
+                        <table class="minimalist-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Tipo</th>
+                                    <th>Mensaje</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-alertas-table">
+                                <!-- Los datos se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <div class="container">
+                <p>Panel de Administración - Cuartel de Bomberos &copy; 2023</p>
+            </div>
+        </footer>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/utils.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/registro.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/admin.js"></script>
-    <script src="js/app.js"></script>
+    <script>
+        // Sistema de Control de Horas - Versión Mejorada
+        const Sistema = {
+            config: {
+                horasGuardiaRequeridas: 12,
+                notificaciones: true
+            },
+            
+            usuarios: [
+                { id: 1, legajo: "B001", nombre: "Juan Pérez", rango: "Bombero", usuario: "jperez", password: "clave123", email: "jperez@bomberos.com", activo: true, admin: false },
+                { id: 2, legajo: "B002", nombre: "María García", rango: "Cabo", usuario: "mgarcia", password: "clave123", email: "mgarcia@bomberos.com", activo: true, admin: false },
+                { id: 3, legajo: "ADMIN", nombre: "Administrador", rango: "Administrador", usuario: "admin", password: "1234", email: "admin@bomberos.com", activo: true, admin: true }
+            ],
+            
+            actividades: [
+                { id: 1, nombre: "Patrulla", tipo: "Convocatoria" },
+                { id: 2, nombre: "Guardia", tipo: "Guardia" },
+                { id: 3, nombre: "Entrenamiento", tipo: "Convocatoria" },
+                { id: 4, nombre: "Mantenimiento", tipo: "Convocatoria" }
+            ],
+            
+            registros: [],
+            notificaciones: [],
+            usuarioActual: null,
+            
+            init() {
+                this.cargarDatos();
+                this.inicializarEventos();
+                this.verificarSesion();
+            },
+            
+            cargarDatos() {
+                const datos = localStorage.getItem('sistema-bomberos');
+                if (datos) {
+                    const parsed = JSON.parse(datos);
+                    this.registros = parsed.registros || [];
+                    this.notificaciones = parsed.notificaciones || [];
+                }
+            },
+            
+            guardarDatos() {
+                const datos = {
+                    registros: this.registros,
+                    notificaciones: this.notificaciones
+                };
+                localStorage.setItem('sistema-bomberos', JSON.stringify(datos));
+            },
+            
+            inicializarEventos() {
+                // Login
+                document.getElementById('login-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.realizarLogin();
+                });
+                
+                // Navegación bombero
+                document.querySelectorAll('#main-system .nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.cambiarSeccion(link.getAttribute('href').substring(1), 'bombero');
+                    });
+                });
+                
+                // Navegación admin
+                document.querySelectorAll('#admin-system .nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.cambiarSeccion(link.getAttribute('href').substring(6), 'admin');
+                    });
+                });
+                
+                // Formularios
+                document.getElementById('ingreso-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.registrarIngreso();
+                });
+                
+                document.getElementById('salida-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.registrarSalida();
+                });
+                
+                // Logout
+                document.getElementById('logout-btn').addEventListener('click', () => this.cerrarSesion());
+                document.getElementById('admin-logout-btn').addEventListener('click', () => this.cerrarSesion());
+                
+                // Filtros
+                document.getElementById('filtro-fecha-historial').addEventListener('change', () => {
+                    this.cargarHistorialPersonal();
+                });
+                
+                document.getElementById('admin-buscar-usuario').addEventListener('input', () => {
+                    this.cargarUsuariosAdmin();
+                });
+                
+                document.getElementById('admin-aplicar-filtros').addEventListener('click', () => {
+                    this.cargarHistoricoCompleto();
+                });
+                
+                document.getElementById('admin-add-user-btn').addEventListener('click', () => {
+                    this.mostrarModalUsuario();
+                });
+            },
+            
+            verificarSesion() {
+                const sesion = localStorage.getItem('sesion-bomberos');
+                if (sesion) {
+                    this.usuarioActual = JSON.parse(sesion);
+                    this.iniciarSistema();
+                }
+            },
+            
+            realizarLogin() {
+                const usuario = document.getElementById('login-user').value;
+                const password = document.getElementById('login-password').value;
+                
+                const usuarioEncontrado = this.usuarios.find(u => 
+                    u.usuario === usuario && u.password === password && u.activo
+                );
+                
+                if (usuarioEncontrado) {
+                    this.usuarioActual = usuarioEncontrado;
+                    localStorage.setItem('sesion-bomberos', JSON.stringify(this.usuarioActual));
+                    this.iniciarSistema();
+                } else {
+                    this.mostrarErrorLogin('Usuario o contraseña incorrectos');
+                }
+            },
+            
+            iniciarSistema() {
+                document.getElementById('login-screen').classList.add('hidden');
+                
+                if (this.usuarioActual.admin) {
+                    document.getElementById('admin-system').classList.remove('hidden');
+                    this.cargarSeccionAdmin('dashboard');
+                    this.actualizarDashboardAdmin();
+                } else {
+                    document.getElementById('main-system').classList.remove('hidden');
+                    this.cargarSeccionBombero('dashboard');
+                    this.actualizarDashboardBombero();
+                }
+                
+                this.actualizarInfoUsuario();
+            },
+            
+            cerrarSesion() {
+                this.usuarioActual = null;
+                localStorage.removeItem('sesion-bomberos');
+                
+                document.getElementById('main-system').classList.add('hidden');
+                document.getElementById('admin-system').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('login-form').reset();
+                document.getElementById('login-error').classList.add('hidden');
+            },
+            
+            actualizarInfoUsuario() {
+                if (this.usuarioActual) {
+                    document.getElementById('user-name').textContent = this.usuarioActual.nombre;
+                    document.getElementById('user-rank').textContent = this.usuarioActual.rango;
+                    document.getElementById('admin-user-name').textContent = this.usuarioActual.nombre;
+                }
+            },
+            
+            cambiarSeccion(seccion, tipo) {
+                if (tipo === 'bombero') {
+                    this.cargarSeccionBombero(seccion);
+                } else {
+                    this.cargarSeccionAdmin(seccion);
+                }
+            },
+            
+            cargarSeccionBombero(seccion) {
+                // Actualizar navegación
+                document.querySelectorAll('#main-system .nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${seccion}`) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                // Ocultar secciones
+                document.querySelectorAll('#main-system .tab-content').forEach(sec => {
+                    sec.classList.add('hidden');
+                });
+                
+                // Mostrar sección
+                document.getElementById(seccion).classList.remove('hidden');
+                
+                // Cargar datos específicos
+                if (seccion === 'historial') {
+                    this.cargarHistorialPersonal();
+                } else if (seccion === 'dashboard') {
+                    this.actualizarDashboardBombero();
+                }
+            },
+            
+            cargarSeccionAdmin(seccion) {
+                // Actualizar navegación
+                document.querySelectorAll('#admin-system .nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#admin-${seccion}`) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                // Ocultar secciones
+                document.querySelectorAll('#admin-system .tab-content').forEach(sec => {
+                    sec.classList.add('hidden');
+                });
+                
+                // Mostrar sección
+                document.getElementById(`admin-${seccion}`).classList.remove('hidden');
+                
+                // Cargar datos específicos
+                if (seccion === 'personal') {
+                    this.cargarUsuariosAdmin();
+                } else if (seccion === 'historico') {
+                    this.cargarHistoricoCompleto();
+                } else if (seccion === 'alertas') {
+                    this.cargarAlertasAdmin();
+                } else if (seccion === 'dashboard') {
+                    this.actualizarDashboardAdmin();
+                }
+            },
+            
+            registrarIngreso() {
+                const legajo = document.getElementById('legajo').value;
+                const actividadId = parseInt(document.getElementById('actividad').value);
+                const observaciones = document.getElementById('observaciones-ingreso').value;
+                
+                // Validar que el legajo coincida con el usuario
+                if (legajo !== this.usuarioActual.legajo) {
+                    this.mostrarAlerta('El legajo no coincide con su usuario', 'error', 'main');
+                    return;
+                }
+                
+                // Verificar registro activo
+                const registroActivo = this.registros.find(r => 
+                    r.usuario_id === this.usuarioActual.id && !r.fecha_hora_salida
+                );
+                
+                if (registroActivo) {
+                    this.mostrarAlerta('Ya tiene un registro de ingreso activo', 'error', 'main');
+                    return;
+                }
+                
+                // Crear registro
+                const nuevoRegistro = {
+                    id: Date.now(),
+                    usuario_id: this.usuarioActual.id,
+                    actividad_id: actividadId,
+                    fecha_hora_ingreso: new Date(),
+                    fecha_hora_salida: null,
+                    observaciones: observaciones
+                };
+                
+                this.registros.push(nuevoRegistro);
+                this.guardarDatos();
+                
+                this.mostrarAlerta('Ingreso registrado correctamente', 'success', 'main');
+                document.getElementById('ingreso-form').reset();
+                
+                // Actualizar dashboard
+                this.actualizarDashboardBombero();
+            },
+            
+            registrarSalida() {
+                const legajo = document.getElementById('legajo-salida').value;
+                const movilAsignado = document.getElementById('movil-asignado').value;
+                const estadoMovil = document.getElementById('estado-movil').value;
+                const observaciones = document.getElementById('observaciones').value;
+                
+                // Validar legajo
+                if (legajo !== this.usuarioActual.legajo) {
+                    this.mostrarAlerta('El legajo no coincide con su usuario', 'error', 'main');
+                    return;
+                }
+                
+                // Buscar registro activo
+                const registroActivo = this.registros.find(r => 
+                    r.usuario_id === this.usuarioActual.id && !r.fecha_hora_salida
+                );
+                
+                if (!registroActivo) {
+                    this.mostrarAlerta('No tiene un registro de ingreso activo', 'error', 'main');
+                    return;
+                }
+                
+                // Registrar salida
+                registroActivo.fecha_hora_salida = new Date();
+                registroActivo.movil_asignado = movilAsignado;
+                registroActivo.estado_movil = estadoMovil;
+                registroActivo.observaciones_salida = observaciones;
+                
+                // Verificar guardia completa
+                const actividad = this.actividades.find(a => a.id === registroActivo.actividad_id);
+                if (actividad.nombre === "Guardia") {
+                    const horasTrabajadas = this.calcularHorasTrabajadas(registroActivo);
+                    if (horasTrabajadas < this.config.horasGuardiaRequeridas) {
+                        this.agregarNotificacion(
+                            'Guardia Incumplida',
+                            `El bombero ${this.usuarioActual.nombre} no cumplió las ${this.config.horasGuardiaRequeridas} horas de guardia. Horas trabajadas: ${horasTrabajadas.toFixed(2)}`,
+                            this.usuarioActual
+                        );
+                    }
+                }
+                
+                this.guardarDatos();
+                this.mostrarAlerta('Salida registrada correctamente', 'success', 'main');
+                document.getElementById('salida-form').reset();
+                
+                // Actualizar dashboard
+                this.actualizarDashboardBombero();
+            },
+            
+            calcularHorasTrabajadas(registro) {
+                const ingreso = new Date(registro.fecha_hora_ingreso);
+                const salida = registro.fecha_hora_salida ? new Date(registro.fecha_hora_salida) : new Date();
+                return (salida - ingreso) / (1000 * 60 * 60);
+            },
+            
+            actualizarDashboardBombero() {
+                const ahora = new Date();
+                const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+                
+                // Calcular horas del mes
+                const horasMes = this.registros
+                    .filter(r => r.usuario_id === this.usuarioActual.id && 
+                                new Date(r.fecha_hora_ingreso) >= inicioMes && 
+                                r.fecha_hora_salida)
+                    .reduce((total, r) => total + this.calcularHorasTrabajadas(r), 0);
+                
+                document.getElementById('horas-mes').textContent = horasMes.toFixed(0);
+                
+                // Días trabajados
+                const diasTrabajados = new Set(
+                    this.registros
+                        .filter(r => r.usuario_id === this.usuarioActual.id && 
+                                    new Date(r.fecha_hora_ingreso) >= inicioMes)
+                        .map(r => new Date(r.fecha_hora_ingreso).toDateString())
+                ).size;
+                
+                document.getElementById('dias-trabajados').textContent = diasTrabajados;
+                
+                // Guardias completadas
+                const guardiasCompletadas = this.registros.filter(r => 
+                    r.usuario_id === this.usuarioActual.id && 
+                    r.actividad_id === 2 && // Guardia
+                    r.fecha_hora_salida
+                ).length;
+                
+                document.getElementById('guardias-completadas').textContent = guardiasCompletadas;
+                
+                // Estado actual
+                const registroActivo = this.registros.find(r => 
+                    r.usuario_id === this.usuarioActual.id && !r.fecha_hora_salida
+                );
+                
+                const estadoActual = document.getElementById('estado-actual');
+                if (registroActivo) {
+                    const actividad = this.actividades.find(a => a.id === registroActivo.actividad_id);
+                    const horas = this.calcularHorasTrabajadas(registroActivo);
+                    estadoActual.innerHTML = `
+                        <p><i class="fas fa-check-circle" style="color: var(--success);"></i> Tienes una guardia activa de <strong>${actividad.nombre}</strong>.</p>
+                        <p>Horas transcurridas: <strong>${horas.toFixed(2)} horas</strong></p>
+                    `;
+                } else {
+                    estadoActual.innerHTML = `<p><i class="fas fa-info-circle"></i> No tienes un registro de guardia activo.</p>`;
+                }
+            },
+            
+            actualizarDashboardAdmin() {
+                // Total personal
+                document.getElementById('admin-total-personal').textContent = 
+                    this.usuarios.filter(u => u.activo).length;
+                
+                // Personal en guardia
+                const enGuardia = this.registros.filter(r => !r.fecha_hora_salida).length;
+                document.getElementById('admin-personal-activo').textContent = enGuardia;
+                
+                // Alertas pendientes
+                const alertasPendientes = this.notificaciones.filter(n => !n.leida).length;
+                document.getElementById('admin-alertas-pendientes').textContent = alertasPendientes;
+                document.getElementById('admin-notification-count').textContent = alertasPendientes;
+                document.getElementById('admin-notification-count').classList.toggle('hidden', alertasPendientes === 0);
+                
+                // Horas totales del mes
+                const ahora = new Date();
+                const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+                const horasTotales = this.registros
+                    .filter(r => new Date(r.fecha_hora_ingreso) >= inicioMes && r.fecha_hora_salida)
+                    .reduce((total, r) => total + this.calcularHorasTrabajadas(r), 0);
+                
+                document.getElementById('admin-horas-totales').textContent = horasTotales.toFixed(0);
+                
+                // Personal en guardia
+                this.cargarPersonalEnGuardiaAdmin();
+                
+                // Actividad reciente
+                this.cargarActividadRecienteAdmin();
+            },
+            
+            cargarPersonalEnGuardiaAdmin() {
+                const tbody = document.getElementById('admin-personal-guardia');
+                tbody.innerHTML = '';
+                
+                const registrosActivos = this.registros.filter(r => !r.fecha_hora_salida);
+                
+                registrosActivos.forEach(registro => {
+                    const usuario = this.usuarios.find(u => u.id === registro.usuario_id);
+                    const actividad = this.actividades.find(a => a.id === registro.actividad_id);
+                    
+                    if (usuario && actividad) {
+                        const fila = document.createElement('tr');
+                        const horas = this.calcularHorasTrabajadas(registro);
+                        
+                        fila.innerHTML = `
+                            <td>${usuario.nombre}</td>
+                            <td>${actividad.nombre}</td>
+                            <td>${new Date(registro.fecha_hora_ingreso).toLocaleTimeString()}</td>
+                            <td>${horas.toFixed(2)}h</td>
+                        `;
+                        
+                        tbody.appendChild(fila);
+                    }
+                });
+                
+                if (registrosActivos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay personal en guardia</td></tr>';
+                }
+            },
+            
+            cargarActividadRecienteAdmin() {
+                const tbody = document.getElementById('admin-actividad-reciente');
+                tbody.innerHTML = '';
+                
+                // Últimos 5 registros de salida
+                const registrosRecientes = this.registros
+                    .filter(r => r.fecha_hora_salida)
+                    .sort((a, b) => new Date(b.fecha_hora_salida) - new Date(a.fecha_hora_salida))
+                    .slice(0, 5);
+                
+                registrosRecientes.forEach(registro => {
+                    const usuario = this.usuarios.find(u => u.id === registro.usuario_id);
+                    const actividad = this.actividades.find(a => a.id === registro.actividad_id);
+                    
+                    if (usuario && actividad) {
+                        const fila = document.createElement('tr');
+                        
+                        fila.innerHTML = `
+                            <td>${usuario.nombre}</td>
+                            <td>${actividad.nombre}</td>
+                            <td>${new Date(registro.fecha_hora_salida).toLocaleTimeString()}</td>
+                        `;
+                        
+                        tbody.appendChild(fila);
+                    }
+                });
+                
+                if (registrosRecientes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay actividad reciente</td></tr>';
+                }
+            },
+            
+            cargarHistorialPersonal() {
+                const tbody = document.getElementById('historial-table-body');
+                tbody.innerHTML = '';
+                
+                const filtroMes = document.getElementById('filtro-fecha-historial').value;
+                let registrosUsuario = this.registros.filter(r => r.usuario_id === this.usuarioActual.id);
+                
+                // Aplicar filtro por mes
+                if (filtroMes) {
+                    const [anio, mes] = filtroMes.split('-');
+                    registrosUsuario = registrosUsuario.filter(r => {
+                        const fecha = new Date(r.fecha_hora_ingreso);
+                        return fecha.getFullYear() === parseInt(anio) && 
+                               fecha.getMonth() + 1 === parseInt(mes);
+                    });
+                }
+                
+                // Ordenar por fecha (más recientes primero)
+                registrosUsuario.sort((a, b) => new Date(b.fecha_hora_ingreso) - new Date(a.fecha_hora_ingreso));
+                
+                registrosUsuario.forEach(registro => {
+                    const actividad = this.actividades.find(a => a.id === registro.actividad_id);
+                    
+                    const fila = document.createElement('tr');
+                    
+                    const fechaIngreso = new Date(registro.fecha_hora_ingreso);
+                    const fechaSalida = registro.fecha_hora_salida ? new Date(registro.fecha_hora_salida) : null;
+                    
+                    const horasTrabajadas = registro.fecha_hora_salida ? 
+                        this.calcularHorasTrabajadas(registro) : 0;
+                    
+                    const estado = registro.fecha_hora_salida ? 
+                        (actividad.nombre === "Guardia" && horasTrabajadas < this.config.horasGuardiaRequeridas ? 
+                         '<span class="badge badge-warning">Incompleta</span>' : 
+                         '<span class="badge badge-success">Completada</span>') : 
+                        '<span class="badge badge-info">En curso</span>';
+                    
+                    fila.innerHTML = `
+                        <td>${fechaIngreso.toLocaleDateString()}</td>
+                        <td>${actividad ? actividad.nombre : 'N/A'}</td>
+                        <td>${fechaIngreso.toLocaleTimeString()}</td>
+                        <td>${fechaSalida ? fechaSalida.toLocaleTimeString() : '-'}</td>
+                        <td>${horasTrabajadas > 0 ? horasTrabajadas.toFixed(2) + 'h' : '-'}</td>
+                        <td>${estado}</td>
+                    `;
+                    
+                    tbody.appendChild(fila);
+                });
+                
+                if (registrosUsuario.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay registros para mostrar</td></tr>';
+                }
+            },
+            
+            cargarUsuariosAdmin() {
+                const tbody = document.getElementById('admin-personal-table');
+                tbody.innerHTML = '';
+                
+                const busqueda = document.getElementById('admin-buscar-usuario').value.toLowerCase();
+                let usuariosFiltrados = this.usuarios;
+                
+                if (busqueda) {
+                    usuariosFiltrados = this.usuarios.filter(u => 
+                        u.nombre.toLowerCase().includes(busqueda) || 
+                        u.legajo.toLowerCase().includes(busqueda)
+                    );
+                }
+                
+                usuariosFiltrados.forEach(usuario => {
+                    const fila = document.createElement('tr');
+                    
+                    fila.innerHTML = `
+                        <td>${usuario.legajo}</td>
+                        <td>${usuario.nombre}</td>
+                        <td>${usuario.rango}</td>
+                        <td>${usuario.usuario}</td>
+                        <td>${usuario.activo ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-danger">Inactivo</span>'}</td>
+                        <td>
+                            <button class="btn-outline btn-sm" onclick="Sistema.editarUsuario(${usuario.id})">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(fila);
+                });
+            },
+            
+            cargarHistoricoCompleto() {
+                const tbody = document.getElementById('admin-historico-table');
+                tbody.innerHTML = '';
+                
+                // Aplicar filtros
+                const filtroUsuario = document.getElementById('admin-filtro-usuario').value;
+                const filtroFecha = document.getElementById('admin-filtro-fecha').value;
+                const filtroActividad = document.getElementById('admin-filtro-actividad').value;
+                
+                let registrosFiltrados = [...this.registros];
+                
+                if (filtroUsuario) {
+                    registrosFiltrados = registrosFiltrados.filter(r => r.usuario_id === parseInt(filtroUsuario));
+                }
+                
+                if (filtroFecha) {
+                    registrosFiltrados = registrosFiltrados.filter(r => {
+                        const fechaRegistro = new Date(r.fecha_hora_ingreso).toISOString().split('T')[0];
+                        return fechaRegistro === filtroFecha;
+                    });
+                }
+                
+                if (filtroActividad) {
+                    registrosFiltrados = registrosFiltrados.filter(r => r.actividad_id === parseInt(filtroActividad));
+                }
+                
+                // Ordenar por fecha (más recientes primero)
+                registrosFiltrados.sort((a, b) => new Date(b.fecha_hora_ingreso) - new Date(a.fecha_hora_ingreso));
+                
+                // Llenar la tabla
+                registrosFiltrados.forEach(registro => {
+                    const usuario = this.usuarios.find(u => u.id === registro.usuario_id);
+                    const actividad = this.actividades.find(a => a.id === registro.actividad_id);
+                    
+                    const fila = document.createElement('tr');
+                    
+                    const fechaIngreso = new Date(registro.fecha_hora_ingreso);
+                    const horasTrabajadas = registro.fecha_hora_salida ? 
+                        this.calcularHorasTrabajadas(registro) : 0;
+                    
+                    const estado = registro.fecha_hora_salida ? 
+                        (actividad.nombre === "Guardia" && horasTrabajadas < this.config.horasGuardiaRequeridas ? 
+                         '<span class="badge badge-warning">Incompleta</span>' : 
+                         '<span class="badge badge-success">Completada</span>') : 
+                        '<span class="badge badge-info">En curso</span>';
+                    
+                    fila.innerHTML = `
+                        <td>${fechaIngreso.toLocaleDateString()}</td>
+                        <td>${usuario ? usuario.legajo : 'N/A'}</td>
+                        <td>${usuario ? usuario.nombre : 'N/A'}</td>
+                        <td>${actividad ? actividad.nombre : 'N/A'}</td>
+                        <td>${horasTrabajadas > 0 ? horasTrabajadas.toFixed(2) + 'h' : '-'}</td>
+                        <td>${estado}</td>
+                    `;
+                    
+                    tbody.appendChild(fila);
+                });
+                
+                // Actualizar opciones de filtro de usuarios
+                this.actualizarFiltroUsuarios();
+                
+                if (registrosFiltrados.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay registros para mostrar</td></tr>';
+                }
+            },
+            
+            cargarAlertasAdmin() {
+                const tbody = document.getElementById('admin-alertas-table');
+                tbody.innerHTML = '';
+                
+                // Ordenar notificaciones por fecha (más recientes primero)
+                const notificacionesOrdenadas = [...this.notificaciones].sort((a, b) => 
+                    new Date(b.fecha) - new Date(a.fecha)
+                );
+                
+                notificacionesOrdenadas.forEach(notificacion => {
+                    const usuario = this.usuarios.find(u => u.id === notificacion.usuario_id);
+                    
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${new Date(notificacion.fecha).toLocaleDateString()}</td>
+                        <td>${usuario ? usuario.nombre : 'N/A'}</td>
+                        <td><span class="badge badge-danger">${notificacion.tipo}</span></td>
+                        <td>${notificacion.mensaje}</td>
+                        <td>
+                            ${!notificacion.leida ? 
+                                `<button class="btn-success btn-sm" onclick="Sistema.marcarAlertaLeida(${notificacion.id})">
+                                    <i class="fas fa-check"></i> Marcar leída
+                                </button>` : 
+                                '<span class="badge badge-success">Leída</span>'
+                            }
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(fila);
+                });
+                
+                if (this.notificaciones.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay alertas</td></tr>';
+                }
+            },
+            
+            actualizarFiltroUsuarios() {
+                const select = document.getElementById('admin-filtro-usuario');
+                const currentValue = select.value;
+                
+                select.innerHTML = '<option value="">Todos los usuarios</option>';
+                
+                this.usuarios.forEach(usuario => {
+                    const option = document.createElement('option');
+                    option.value = usuario.id;
+                    option.textContent = `${usuario.legajo} - ${usuario.nombre}`;
+                    select.appendChild(option);
+                });
+                
+                if (currentValue) {
+                    select.value = currentValue;
+                }
+            },
+            
+            agregarNotificacion(tipo, mensaje, usuario) {
+                const notificacion = {
+                    id: Date.now(),
+                    tipo,
+                    mensaje,
+                    usuario_id: usuario.id,
+                    fecha: new Date(),
+                    leida: false
+                };
+                
+                this.notificaciones.push(notificacion);
+                this.guardarDatos();
+                
+                // Actualizar contador si el admin está logueado
+                if (this.usuarioActual && this.usuarioActual.admin) {
+                    this.actualizarDashboardAdmin();
+                }
+            },
+            
+            marcarAlertaLeida(id) {
+                const notificacion = this.notificaciones.find(n => n.id === id);
+                if (notificacion) {
+                    notificacion.leida = true;
+                    this.guardarDatos();
+                    this.cargarAlertasAdmin();
+                    this.actualizarDashboardAdmin();
+                }
+            },
+            
+            mostrarModalUsuario() {
+                // Implementación básica - en una versión completa esto abriría un modal
+                alert('Funcionalidad de agregar usuario - En desarrollo');
+            },
+            
+            editarUsuario(id) {
+                // Implementación básica - en una versión completa esto abriría un modal
+                alert(`Funcionalidad de editar usuario ${id} - En desarrollo`);
+            },
+            
+            mostrarAlerta(mensaje, tipo, sistema) {
+                const container = sistema === 'admin' ? 
+                    document.getElementById('admin-alert-container') : 
+                    document.getElementById('alert-container');
+                
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${tipo}`;
+                alertDiv.innerHTML = `
+                    <i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                    ${mensaje}
+                `;
+                
+                container.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    if (alertDiv.parentElement) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
+            },
+            
+            mostrarErrorLogin(mensaje) {
+                const errorDiv = document.getElementById('login-error');
+                const errorText = document.getElementById('login-error-text');
+                
+                errorText.textContent = mensaje;
+                errorDiv.classList.remove('hidden');
+            }
+        };
+        
+        // Inicializar el sistema cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            Sistema.init();
+        });
+    </script>
 </body>
 </html>
