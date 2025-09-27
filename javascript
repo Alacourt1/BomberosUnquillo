@@ -160,3 +160,95 @@ const Storage = {
         });
     }
 };
+// Manejo de autenticación y sesiones
+const Auth = {
+    usuarioActual: null,
+    
+    // Inicializar sistema de autenticación
+    init() {
+        this.verificarSesion();
+        this.inicializarEventos();
+    },
+    
+    // Verificar si hay una sesión activa
+    verificarSesion() {
+        const sesion = Storage.loadItem(Storage.keys.SESSION);
+        if (sesion) {
+            const usuario = Storage.loadData().usuarios.find(u => u.id === sesion.id && u.activo);
+            if (usuario) {
+                this.usuarioActual = usuario;
+                App.iniciarSistema();
+            } else {
+                this.cerrarSesion();
+            }
+        }
+    },
+    
+    // Inicializar eventos de autenticación
+    inicializarEventos() {
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.realizarLogin();
+        });
+        
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            this.cerrarSesion();
+        });
+        
+        document.getElementById('admin-logout-btn').addEventListener('click', () => {
+            this.cerrarSesion();
+        });
+    },
+    
+    // Realizar login
+    realizarLogin() {
+        const usuarioInput = document.getElementById('login-user').value;
+        const passwordInput = document.getElementById('login-password').value;
+        
+        const { usuarios } = Storage.loadData();
+        const usuario = usuarios.find(u => 
+            u.usuario === usuarioInput && u.password === passwordInput && u.activo
+        );
+        
+        if (usuario) {
+            this.usuarioActual = usuario;
+            Storage.saveItem(Storage.keys.SESSION, { id: usuario.id, timestamp: new Date() });
+            App.iniciarSistema();
+            UI.mostrarAlerta('Login exitoso', 'success');
+        } else {
+            this.mostrarErrorLogin('Usuario o contraseña incorrectos');
+        }
+    },
+    
+    // Cerrar sesión
+    cerrarSesion() {
+        this.usuarioActual = null;
+        Storage.saveItem(Storage.keys.SESSION, null);
+        App.cerrarSesion();
+    },
+    
+    // Mostrar error de login
+    mostrarErrorLogin(mensaje) {
+        const errorDiv = document.getElementById('login-error');
+        const errorText = document.getElementById('login-error-text');
+        
+        errorText.textContent = mensaje;
+        errorDiv.classList.remove('hidden');
+    },
+    
+    // Verificar permisos
+    tienePermiso(accion) {
+        if (!this.usuarioActual) return false;
+        if (this.usuarioActual.admin) return true;
+        
+        const permisos = {
+            'registrar_ingreso': true,
+            'registrar_salida': true,
+            'ver_historial': true,
+            'gestionar_usuarios': false,
+            'ver_todo_historial': false
+        };
+        
+        return permisos[accion] || false;
+    }
+};
