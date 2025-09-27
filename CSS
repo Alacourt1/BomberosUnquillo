@@ -616,3 +616,65 @@ footer {
 .w-100 {
     width: 100%;
 }
+/* Responsive Styles */
+@media (max-width: 992px) {
+    .grid-3 {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .nav-links a {
+        padding: 14px 18px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .user-info {
+        justify-content: center;
+    }
+    
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links li {
+        margin: 4px;
+    }
+    
+    .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .tabs {
+        flex-direction: column;
+    }
+    
+    .tab {
+        text-align: center;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .login-card {
+        padding: 30px 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
