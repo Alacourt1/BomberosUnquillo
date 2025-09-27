@@ -53,3 +53,110 @@ const Utils = {
         }
     }
 };
+// Manejo del almacenamiento local
+const Storage = {
+    // Claves para localStorage
+    keys: {
+        USERS: 'bomberos_usuarios',
+        REGISTROS: 'bomberos_registros',
+        NOTIFICACIONES: 'bomberos_notificaciones',
+        CONFIG: 'bomberos_config',
+        SESSION: 'bomberos_sesion'
+    },
+    
+    // Datos por defecto
+    defaultData: {
+        usuarios: [
+            { id: 1, legajo: "B001", nombre: "Juan Pérez", rango: "Bombero", usuario: "jperez", password: "clave123", email: "jperez@bomberos.com", activo: true, admin: false },
+            { id: 2, legajo: "B002", nombre: "María García", rango: "Cabo", usuario: "mgarcia", password: "clave123", email: "mgarcia@bomberos.com", activo: true, admin: false },
+            { id: 3, legajo: "ADMIN", nombre: "Administrador", rango: "Administrador", usuario: "admin", password: "1234", email: "admin@bomberos.com", activo: true, admin: true }
+        ],
+        actividades: [
+            { id: 1, nombre: "Patrulla", tipo: "Convocatoria" },
+            { id: 2, nombre: "Guardia", tipo: "Guardia" },
+            { id: 3, nombre: "Entrenamiento", tipo: "Convocatoria" },
+            { id: 4, nombre: "Mantenimiento", tipo: "Convocatoria" }
+        ],
+        config: {
+            horasGuardiaRequeridas: 12,
+            notificaciones: true
+        }
+    },
+    
+    // Cargar datos del localStorage
+    loadData() {
+        try {
+            return {
+                usuarios: this.loadItem(this.keys.USERS) || this.defaultData.usuarios,
+                registros: this.loadItem(this.keys.REGISTROS) || [],
+                notificaciones: this.loadItem(this.keys.NOTIFICACIONES) || [],
+                config: this.loadItem(this.keys.CONFIG) || this.defaultData.config
+            };
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+            return this.defaultData;
+        }
+    },
+    
+    // Guardar datos en localStorage
+    saveData(data) {
+        try {
+            this.saveItem(this.keys.USERS, data.usuarios);
+            this.saveItem(this.keys.REGISTROS, data.registros);
+            this.saveItem(this.keys.NOTIFICACIONES, data.notificaciones);
+            this.saveItem(this.keys.CONFIG, data.config);
+            return true;
+        } catch (error) {
+            console.error('Error guardando datos:', error);
+            return false;
+        }
+    },
+    
+    // Cargar item específico
+    loadItem(key) {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : null;
+    },
+    
+    // Guardar item específico
+    saveItem(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    },
+    
+    // Limpiar todos los datos
+    clearAll() {
+        Object.values(this.keys).forEach(key => {
+            localStorage.removeItem(key);
+        });
+    },
+    
+    // Exportar datos para backup
+    exportData() {
+        const data = this.loadData();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup_bomberos_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    },
+    
+    // Importar datos desde backup
+    importData(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    this.saveData(data);
+                    resolve(true);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = () => reject(new Error('Error leyendo archivo'));
+            reader.readAsText(file);
+        });
+    }
+};
