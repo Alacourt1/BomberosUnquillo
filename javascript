@@ -468,3 +468,652 @@ const Registro = {
         }
     }
 };
+// Manejo del dashboard y estadísticas
+const Dashboard = {
+    // Inicializar dashboard
+    init() {
+        this.inicializarEventos();
+        this.actualizar();
+    },
+    
+    // Inicializar eventos del dashboard
+    inicializarEventos() {
+        // Eventos específicos del dashboard
+    },
+    
+    // Actualizar dashboard
+    actualizar() {
+        if (Auth.usuarioActual.admin) {
+            this.actualizarDashboardAdmin();
+        } else {
+            this.actualizarDashboardBombero();
+        }
+    },
+    
+    // Actualizar dashboard del bombero
+    actualizarDashboardBombero() {
+        const data = Storage.loadData();
+        const ahora = new Date();
+        const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+        
+        // Filtrar registros del usuario actual del mes
+        const registrosUsuario = data.registros.filter(r => 
+            r.usuario_id === Auth.usuarioActual.id && 
+            new Date(r.fecha_hora_ingreso) >= inicioMes
+        );
+        
+        // Calcular estadísticas
+        const horasMes = registrosUsuario
+            .filter(r => r.fecha_hora_salida)
+            .reduce((total, r) => total + Utils.calculateHoursDiff(r.fecha_hora_ingreso, r.fecha_hora_salida), 0);
+        
+        const diasTrabajados = new Set(
+            registrosUsuario.map(r => new Date(r.fecha_hora_ingreso).toDateString())
+        ).size;
+        
+        const guardiasCompletadas = registrosUsuario.filter(r => 
+            r.actividad_id === 2 && r.fecha_hora_salida
+        ).length;
+        
+        // Actualizar UI
+        document.getElementById('horas-mes').textContent = Math.round(horasMes);
+        document.getElementById('dias-trabajados').textContent = diasTrabajados;
+        document.getElementById('guardias-completadas').textContent = guardiasCompletadas;
+        
+        // Estado actual
+        this.actualizarEstadoActual();
+    },
+    
+    // Actualizar dashboard del admin
+    actualizarDashboardAdmin() {
+        const data = Storage.loadData();
+        const ahora = new Date();
+        const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+        
+        // Estadísticas generales
+        document.getElementById('admin-total-personal').textContent = 
+            data.usuarios.filter(u => u.activo).length;
+        
+        document.getElementById('admin-personal-activo').textContent = 
+            data.registros.filter(r => !r.fecha_hora_salida).length;
+        
+        document.getElementById('admin-alertas-pendientes').textContent = 
+            data.notificaciones.filter(n => !n.leida).length;
+        
+        const horasTotales = data.registros
+            .filter(r => new Date(r.fecha_hora_ingreso) >= inicioMes && r.fecha_hora_salida)
+            .reduce((total, r) => total + Utils.calculateHoursDiff(r.fecha_hora_ingreso, r.fecha_hora_salida), 0);
+        
+        document.getElementById('admin-horas-totales').textContent = Math.round(horasTotales);
+        
+        // Actualizar tablas
+        this.actualizarPersonalEnGuardia();
+        this.actualizarActividadReciente();
+    },
+    
+    // Actualizar estado actual del bombero
+    actualizarEstadoActual() {
+        const data = Storage.loadData();
+        const registroActivo = data.registros.find(r => 
+            r.usuario_id === Auth.usuarioActual.id && !r.fecha_hora_salida
+        );
+        
+        const estadoActual = document.getElementById('estado-actual');
+        if (registroActivo) {
+            const actividad = data.actividades.find(a => a.id === registroActivo.actividad_id);
+            const horas = Utils.calculateHoursDiff(registroActivo.fecha_hora_ingreso, new Date());
+            
+            estadoActual.innerHTML = `
+                <p><i class="fas fa-check-circle" style="color: var(--success);"></i> 
+                   Tienes una guardia activa de <strong>${actividad ? actividad.nombre : 'N/A'}</strong>.</p>
+                <p>Horas transcurridas: <strong>${horas.toFixed(2)} horas</strong></p>
+            `;
+        } else {
+            estadoActual.innerHTML = `
+                <p><i class="fas fa-info-circle"></i> No tienes un registro de guardia activo.</p>
+            `;
+        }
+    },
+    
+    // Actualizar tabla de personal en guardia (admin)
+    actualizarPersonalEnGuardia() {
+        const tbody = document.getElementById('admin-personal-guardia');
+        if (!tbody) return;
+        
+        const data = Storage.loadData();
+        const registrosActivos = data.registros.filter(r => !r.fecha_hora_salida);
+        
+        tbody.innerHTML = '';
+        
+        if (registrosActivos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay personal en guardia</td></tr>';
+            return;
+        }
+        
+        registrosActivos.forEach(registro => {
+            const usuario = data.usuarios.find(u => u.id === registro.usuario_id);
+            const actividad = data.actividades.find(a => a.id === registro.actividad_id);
+            
+            if (usuario && actividad) {
+                const fila = document.createElement('tr');
+                const horas = Utils.calculateHoursDiff(registro.fecha_hora_ingreso, new Date());
+                
+                fila.innerHTML = `
+                    <td>${usuario.nombre}</td>
+                    <td>${actividad.nombre}</td>
+                    <td>${Utils.formatTime(registro.fecha_hora_ingreso)}</td>
+                    <td>${horas.toFixed(2)}h</td>
+                `;
+                
+                tbody.appendChild(fila);
+            }
+        });
+    },
+    
+    // Actualizar tabla de actividad reciente (admin)
+    actualizarActividadReciente() {
+        const tbody = document.getElementById('admin-actividad-reciente');
+        if (!tbody) return;
+        
+        const data = Storage.loadData();
+        
+        // Últimos 5 registros de salida
+        const registrosRecientes = data.registros
+            .filter(r => r.fecha_hora_salida)
+            .sort((a, b) => new Date(b.fecha_hora_salida) - new Date(a.fecha_hora_salida))
+            .slice(0, 5);
+        
+        tbody.innerHTML = '';
+        
+        if (registrosRecientes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay actividad reciente</td></tr>';
+            return;
+        }
+        
+        registrosRecientes.forEach(registro => {
+            const usuario = data.usuarios.find(u => u.id === registro.usuario_id);
+            const actividad = data.actividades.find(a => a.id === registro.actividad_id);
+            
+            if (usuario && actividad) {
+                const fila = document.createElement('tr');
+                
+                fila.innerHTML = `
+                    <td>${usuario.nombre}</td>
+                    <td>${actividad.nombre}</td>
+                    <td>${Utils.formatTime(registro.fecha_hora_salida)}</td>
+                `;
+                
+                tbody.appendChild(fila);
+            }
+        });
+    }
+};
+// Manejo del panel de administración
+const Admin = {
+    // Inicializar panel de administración
+    init() {
+        this.inicializarEventos();
+        this.actualizarNotificaciones();
+    },
+    
+    // Inicializar eventos del admin
+    inicializarEventos() {
+        // Navegación de tabs
+        document.querySelectorAll('#admin-system .nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = link.getAttribute('href').substring(6); // Remover "admin-"
+                this.cambiarSeccion(target);
+            });
+        });
+        
+        // Botones de acción
+        document.getElementById('admin-aplicar-filtros').addEventListener('click', () => {
+            this.cargarHistoricoCompleto();
+        });
+        
+        document.getElementById('admin-buscar-usuario').addEventListener('input', () => {
+            this.cargarUsuarios();
+        });
+        
+        // Inicializar filtros
+        this.inicializarFiltros();
+    },
+    
+    // Cambiar sección del admin
+    cambiarSeccion(seccion) {
+        // Actualizar navegación
+        document.querySelectorAll('#admin-system .nav-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#admin-${seccion}`) {
+                link.classList.add('active');
+            }
+        });
+        
+        // Ocultar todas las secciones
+        document.querySelectorAll('#admin-system .tab-content').forEach(sec => {
+            sec.classList.add('hidden');
+        });
+        
+        // Mostrar sección seleccionada
+        const seccionElement = document.getElementById(`admin-${seccion}`);
+        if (seccionElement) {
+            seccionElement.classList.remove('hidden');
+        }
+        
+        // Cargar datos específicos
+        switch(seccion) {
+            case 'personal':
+                this.cargarUsuarios();
+                break;
+            case 'historico':
+                this.cargarHistoricoCompleto();
+                break;
+            case 'alertas':
+                this.cargarAlertas();
+                break;
+        }
+    },
+    
+    // Actualizar contador de notificaciones
+    actualizarNotificaciones() {
+        const data = Storage.loadData();
+        const alertasPendientes = data.notificaciones.filter(n => !n.leida).length;
+        const notificationBadge = document.getElementById('admin-notification-count');
+        
+        notificationBadge.textContent = alertasPendientes;
+        if (alertasPendientes > 0) {
+            notificationBadge.classList.remove('hidden');
+        } else {
+            notificationBadge.classList.add('hidden');
+        }
+    },
+    
+    // Cargar usuarios en la tabla
+    cargarUsuarios() {
+        const tbody = document.getElementById('admin-personal-table');
+        if (!tbody) return;
+        
+        const data = Storage.loadData();
+        const busqueda = document.getElementById('admin-buscar-usuario').value.toLowerCase();
+        
+        let usuariosFiltrados = data.usuarios;
+        
+        if (busqueda) {
+            usuariosFiltrados = data.usuarios.filter(u => 
+                u.nombre.toLowerCase().includes(busqueda) || 
+                u.legajo.toLowerCase().includes(busqueda)
+            );
+        }
+        
+        tbody.innerHTML = '';
+        
+        if (usuariosFiltrados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No se encontraron usuarios</td></tr>';
+            return;
+        }
+        
+        usuariosFiltrados.forEach(usuario => {
+            const fila = document.createElement('tr');
+            
+            fila.innerHTML = `
+                <td>${usuario.legajo}</td>
+                <td>${usuario.nombre}</td>
+                <td>${usuario.rango}</td>
+                <td>${usuario.usuario}</td>
+                <td>${usuario.activo ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-danger">Inactivo</span>'}</td>
+                <td>
+                    <button class="btn-outline btn-sm" onclick="Admin.editarUsuario(${usuario.id})">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(fila);
+        });
+    },
+    
+    // Cargar histórico completo
+    cargarHistoricoCompleto() {
+        const tbody = document.getElementById('admin-historico-table');
+        if (!tbody) return;
+        
+        const data = Storage.loadData();
+        
+        // Aplicar filtros
+        const filtroUsuario = document.getElementById('admin-filtro-usuario').value;
+        const filtroFecha = document.getElementById('admin-filtro-fecha').value;
+        const filtroActividad = document.getElementById('admin-filtro-actividad').value;
+        
+        let registrosFiltrados = [...data.registros];
+        
+        if (filtroUsuario) {
+            registrosFiltrados = registrosFiltrados.filter(r => r.usuario_id === parseInt(filtroUsuario));
+        }
+        
+        if (filtroFecha) {
+            registrosFiltrados = registrosFiltrados.filter(r => {
+                const fechaRegistro = new Date(r.fecha_hora_ingreso).toISOString().split('T')[0];
+                return fechaRegistro === filtroFecha;
+            });
+        }
+        
+        if (filtroActividad) {
+            registrosFiltrados = registrosFiltrados.filter(r => r.actividad_id === parseInt(filtroActividad));
+        }
+        
+        // Ordenar por fecha (más recientes primero)
+        registrosFiltrados.sort((a, b) => new Date(b.fecha_hora_ingreso) - new Date(a.fecha_hora_ingreso));
+        
+        tbody.innerHTML = '';
+        
+        if (registrosFiltrados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay registros para mostrar</td></tr>';
+            return;
+        }
+        
+        // Llenar la tabla
+        registrosFiltrados.forEach(registro => {
+            const usuario = data.usuarios.find(u => u.id === registro.usuario_id);
+            const actividad = data.actividades.find(a => a.id === registro.actividad_id);
+            
+            const fila = document.createElement('tr');
+            
+            const horasTrabajadas = registro.fecha_hora_salida ? 
+                Utils.calculateHoursDiff(registro.fecha_hora_ingreso, registro.fecha_hora_salida) : 0;
+            
+            const estado = registro.fecha_hora_salida ? 
+                (actividad && actividad.nombre === "Guardia" && horasTrabajadas < data.config.horasGuardiaRequeridas ? 
+                 '<span class="badge badge-warning">Incompleta</span>' : 
+                 '<span class="badge badge-success">Completada</span>') : 
+                '<span class="badge badge-info">En curso</span>';
+            
+            fila.innerHTML = `
+                <td>${Utils.formatDate(registro.fecha_hora_ingreso)}</td>
+                <td>${usuario ? usuario.legajo : 'N/A'}</td>
+                <td>${usuario ? usuario.nombre : 'N/A'}</td>
+                <td>${actividad ? actividad.nombre : 'N/A'}</td>
+                <td>${horasTrabajadas > 0 ? horasTrabajadas.toFixed(2) + 'h' : '-'}</td>
+                <td>${estado}</td>
+            `;
+            
+            tbody.appendChild(fila);
+        });
+    },
+    
+    // Cargar alertas
+    cargarAlertas() {
+        const tbody = document.getElementById('admin-alertas-table');
+        if (!tbody) return;
+        
+        const data = Storage.loadData();
+        
+        // Ordenar notificaciones por fecha (más recientes primero)
+        const notificacionesOrdenadas = [...data.notificaciones].sort((a, b) => 
+            new Date(b.fecha) - new Date(a.fecha)
+        );
+        
+        tbody.innerHTML = '';
+        
+        if (notificacionesOrdenadas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay alertas</td></tr>';
+            return;
+        }
+        
+        notificacionesOrdenadas.forEach(notificacion => {
+            const usuario = data.usuarios.find(u => u.id === notificacion.usuario_id);
+            
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td>${Utils.formatDate(notificacion.fecha)}</td>
+                <td>${usuario ? usuario.nombre : 'N/A'}</td>
+                <td><span class="badge badge-danger">${notificacion.tipo}</span></td>
+                <td>${notificacion.mensaje}</td>
+                <td>
+                    ${!notificacion.leida ? 
+                        `<button class="btn-success btn-sm" onclick="Admin.marcarAlertaLeida('${notificacion.id}')">
+                            <i class="fas fa-check"></i> Marcar leída
+                        </button>` : 
+                        '<span class="badge badge-success">Leída</span>'
+                    }
+                </td>
+            `;
+            
+            tbody.appendChild(fila);
+        });
+    },
+    
+    // Marcar alerta como leída
+    marcarAlertaLeida(id) {
+        const data = Storage.loadData();
+        const notificacion = data.notificaciones.find(n => n.id === id);
+        
+        if (notificacion) {
+            notificacion.leida = true;
+            Storage.saveData(data);
+            this.cargarAlertas();
+            this.actualizarNotificaciones();
+        }
+    },
+    
+    // Inicializar filtros
+    inicializarFiltros() {
+        const select = document.getElementById('admin-filtro-usuario');
+        if (!select) return;
+        
+        const data = Storage.loadData();
+        
+        select.innerHTML = '<option value="">Todos los usuarios</option>';
+        
+        data.usuarios.forEach(usuario => {
+            const option = document.createElement('option');
+            option.value = usuario.id;
+            option.textContent = `${usuario.legajo} - ${usuario.nombre}`;
+            select.appendChild(option);
+        });
+    },
+    
+    // Editar usuario (placeholder)
+    editarUsuario(id) {
+        alert(`Funcionalidad de editar usuario ${id} - En desarrollo`);
+    }
+};
+// Aplicación principal - Coordina todos los módulos
+const App = {
+    // Inicializar la aplicación
+    init() {
+        // Inicializar módulos
+        Auth.init();
+        Registro.init();
+        Dashboard.init();
+        Admin.init();
+        
+        // Configurar autocompletado de legajos
+        this.configurarAutocompletado();
+        
+        console.log('Sistema de Bomberos inicializado correctamente');
+    },
+    
+    // Iniciar sistema después del login
+    iniciarSistema() {
+        // Ocultar pantalla de login
+        Utils.toggleElement('login-screen', false);
+        
+        // Actualizar información del usuario en la UI
+        this.actualizarInfoUsuario();
+        
+        // Mostrar sistema correspondiente
+        if (Auth.usuarioActual.admin) {
+            Utils.toggleElement('admin-system', true);
+            Utils.toggleElement('main-system', false);
+            Admin.cambiarSeccion('dashboard');
+        } else {
+            Utils.toggleElement('main-system', true);
+            Utils.toggleElement('admin-system', false);
+            UI.cambiarSeccionBombero('dashboard');
+        }
+        
+        // Actualizar dashboard
+        Dashboard.actualizar();
+    },
+    
+    // Cerrar sesión
+    cerrarSesion() {
+        Utils.toggleElement('main-system', false);
+        Utils.toggleElement('admin-system', false);
+        Utils.toggleElement('login-screen', true);
+        
+        // Limpiar formularios
+        Utils.clearForm('login-form');
+        Utils.clearForm('ingreso-form');
+        Utils.clearForm('salida-form');
+        
+        // Ocultar errores de login
+        Utils.toggleElement('login-error', false);
+    },
+    
+    // Actualizar información del usuario en la UI
+    actualizarInfoUsuario() {
+        if (Auth.usuarioActual) {
+            document.getElementById('user-name').textContent = Auth.usuarioActual.nombre;
+            document.getElementById('user-rank').textContent = Auth.usuarioActual.rango;
+            
+            // Actualizar también en admin si existe
+            const adminUserName = document.getElementById('admin-user-name');
+            if (adminUserName) {
+                adminUserName.textContent = Auth.usuarioActual.nombre;
+            }
+        }
+    },
+    
+    // Configurar autocompletado de legajos en formularios
+    configurarAutocompletado() {
+        // Rellenar automáticamente el legajo en los formularios para usuarios no admin
+        if (Auth.usuarioActual && !Auth.usuarioActual.admin) {
+            document.getElementById('legajo').value = Auth.usuarioActual.legajo;
+            document.getElementById('legajo-salida').value = Auth.usuarioActual.legajo;
+        }
+    }
+};
+
+// Inicializar la aplicación cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    App.init();
+});
+
+// Objeto UI para manejar la interfaz (separa del código de negocio)
+const UI = {
+    // Mostrar alerta
+    mostrarAlerta(mensaje, tipo, sistema = 'main') {
+        let containerId = 'alert-container';
+        if (sistema === 'admin') {
+            containerId = 'admin-alert-container';
+        }
+        
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${tipo}`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+            ${mensaje}
+        `;
+        
+        container.appendChild(alertDiv);
+        
+        // Auto-eliminar después de 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentElement) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    },
+    
+    // Cambiar sección del sistema bombero
+    cambiarSeccionBombero(seccion) {
+        // Actualizar navegación
+        document.querySelectorAll('#main-system .nav-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${seccion}`) {
+                link.classList.add('active');
+            }
+        });
+        
+        // Ocultar todas las secciones
+        document.querySelectorAll('#main-system .tab-content').forEach(sec => {
+            sec.classList.add('hidden');
+        });
+        
+        // Mostrar sección seleccionada
+        const seccionElement = document.getElementById(seccion);
+        if (seccionElement) {
+            seccionElement.classList.remove('hidden');
+        }
+        
+        // Cargar datos específicos de la sección
+        if (seccion === 'historial') {
+            this.cargarHistorialPersonal();
+        }
+    },
+    
+    // Cargar historial personal
+    cargarHistorialPersonal() {
+        const tbody = document.getElementById('historial-table-body');
+        if (!tbody) return;
+        
+        const data = Storage.loadData();
+        const filtroMes = document.getElementById('filtro-fecha-historial').value;
+        
+        let registrosUsuario = data.registros.filter(r => r.usuario_id === Auth.usuarioActual.id);
+        
+        // Aplicar filtro por mes
+        if (filtroMes) {
+            const [anio, mes] = filtroMes.split('-');
+            registrosUsuario = registrosUsuario.filter(r => {
+                const fecha = new Date(r.fecha_hora_ingreso);
+                return fecha.getFullYear() === parseInt(anio) && 
+                       fecha.getMonth() + 1 === parseInt(mes);
+            });
+        }
+        
+        // Ordenar por fecha (más recientes primero)
+        registrosUsuario.sort((a, b) => new Date(b.fecha_hora_ingreso) - new Date(a.fecha_hora_ingreso));
+        
+        tbody.innerHTML = '';
+        
+        if (registrosUsuario.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay registros para mostrar</td></tr>';
+            return;
+        }
+        
+        registrosUsuario.forEach(registro => {
+            const actividad = data.actividades.find(a => a.id === registro.actividad_id);
+            
+            const fila = document.createElement('tr');
+            
+            const fechaIngreso = new Date(registro.fecha_hora_ingreso);
+            const fechaSalida = registro.fecha_hora_salida ? new Date(registro.fecha_hora_salida) : null;
+            
+            const horasTrabajadas = registro.fecha_hora_salida ? 
+                Utils.calculateHoursDiff(registro.fecha_hora_ingreso, registro.fecha_hora_salida) : 0;
+            
+            const estado = registro.fecha_hora_salida ? 
+                (actividad && actividad.nombre === "Guardia" && horasTrabajadas < data.config.horasGuardiaRequeridas ? 
+                 '<span class="badge badge-warning">Incompleta</span>' : 
+                 '<span class="badge badge-success">Completada</span>') : 
+                '<span class="badge badge-info">En curso</span>';
+            
+            fila.innerHTML = `
+                <td>${Utils.formatDate(registro.fecha_hora_ingreso)}</td>
+                <td>${actividad ? actividad.nombre : 'N/A'}</td>
+                <td>${Utils.formatTime(registro.fecha_hora_ingreso)}</td>
+                <td>${fechaSalida ? Utils.formatTime(fechaSalida) : '-'}</td>
+                <td>${horasTrabajadas > 0 ? horasTrabajadas.toFixed(2) + 'h' : '-'}</td>
+                <td>${estado}</td>
+            `;
+            
+            tbody.appendChild(fila);
+        });
+    }
+};
