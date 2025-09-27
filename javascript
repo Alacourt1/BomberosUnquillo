@@ -252,3 +252,219 @@ const Auth = {
         return permisos[accion] || false;
     }
 };
+// Manejo de registros de ingreso y salida
+const Registro = {
+    // Inicializar módulo
+    init() {
+        this.inicializarEventos();
+    },
+    
+    // Inicializar eventos de registro
+    inicializarEventos() {
+        document.getElementById('ingreso-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.registrarIngreso();
+        });
+        
+        document.getElementById('salida-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.registrarSalida();
+        });
+    },
+    
+    // Registrar ingreso
+    registrarIngreso() {
+        const legajo = document.getElementById('legajo').value;
+        const actividadId = parseInt(document.getElementById('actividad').value);
+        const observaciones = document.getElementById('observaciones-ingreso').value;
+        
+        // Validaciones
+        if (!this.validarRegistroIngreso(legajo, actividadId)) return;
+        
+        // Obtener datos actuales
+        const data = Storage.loadData();
+        const usuario = data.usuarios.find(u => u.legajo === legajo);
+        
+        // Crear nuevo registro
+        const nuevoRegistro = {
+            id: Utils.generateId(),
+            usuario_id: usuario.id,
+            actividad_id: actividadId,
+            fecha_hora_ingreso: new Date(),
+            fecha_hora_salida: null,
+            observaciones: observaciones,
+            registrado_por: Auth.usuarioActual.id
+        };
+        
+        data.registros.push(nuevoRegistro);
+        
+        if (Storage.saveData(data)) {
+            UI.mostrarAlerta('Ingreso registrado correctamente', 'success');
+            Utils.clearForm('ingreso-form');
+            
+            // Restaurar legajo del usuario actual
+            if (!Auth.usuarioActual.admin) {
+                document.getElementById('legajo').value = Auth.usuarioActual.legajo;
+            }
+            
+            // Actualizar dashboard
+            Dashboard.actualizar();
+        } else {
+            UI.mostrarAlerta('Error al guardar el registro', 'error');
+        }
+    },
+    
+    // Registrar salida
+    registrarSalida() {
+        const legajo = document.getElementById('legajo-salida').value;
+        const movilAsignado = document.getElementById('movil-asignado').value;
+        const estadoMovil = document.getElementById('estado-movil').value;
+        const observaciones = document.getElementById('observaciones').value;
+        
+        // Validaciones
+        if (!this.validarRegistroSalida(legajo, movilAsignado, estadoMovil)) return;
+        
+        // Obtener datos actuales
+        const data = Storage.loadData();
+        const usuario = data.usuarios.find(u => u.legajo === legajo);
+        const registroActivo = data.registros.find(r => 
+            r.usuario_id === usuario.id && !r.fecha_hora_salida
+        );
+        
+        if (!registroActivo) {
+            UI.mostrarAlerta('No se encontró un registro activo para este usuario', 'error');
+            return;
+        }
+        
+        // Actualizar registro
+        registroActivo.fecha_hora_salida = new Date();
+        registroActivo.movil_asignado = movilAsignado;
+        registroActivo.estado_movil = estadoMovil;
+        registroActivo.observaciones_salida = observaciones;
+        
+        // Verificar guardia completa
+        this.verificarGuardiaCompleta(registroActivo, usuario);
+        
+        if (Storage.saveData(data)) {
+            UI.mostrarAlerta('Salida registrada correctamente', 'success');
+            Utils.clearForm('salida-form');
+            
+            // Restaurar legajo del usuario actual
+            if (!Auth.usuarioActual.admin) {
+                document.getElementById('legajo-salida').value = Auth.usuarioActual.legajo;
+            }
+            
+            // Actualizar dashboard
+            Dashboard.actualizar();
+        } else {
+            UI.mostrarAlerta('Error al guardar el registro', 'error');
+        }
+    },
+    
+    // Validar registro de ingreso
+    validarRegistroIngreso(legajo, actividadId) {
+        if (!legajo) {
+            UI.mostrarAlerta('Debe ingresar un legajo', 'error');
+            return false;
+        }
+        
+        if (!actividadId) {
+            UI.mostrarAlerta('Debe seleccionar una actividad', 'error');
+            return false;
+        }
+        
+        // Validar permisos
+        if (!Auth.usuarioActual.admin && legajo !== Auth.usuarioActual.legajo) {
+            UI.mostrarAlerta('Solo puede registrar ingreso con su propio legajo', 'error');
+            return false;
+        }
+        
+        // Verificar si el usuario existe
+        const data = Storage.loadData();
+        const usuario = data.usuarios.find(u => u.legajo === legajo && u.activo);
+        if (!usuario) {
+            UI.mostrarAlerta('Legajo no encontrado o usuario inactivo', 'error');
+            return false;
+        }
+        
+        // Verificar que no tenga registro activo
+        const registroActivo = data.registros.find(r => 
+            r.usuario_id === usuario.id && !r.fecha_hora_salida
+        );
+        
+        if (registroActivo) {
+            UI.mostrarAlerta('El usuario ya tiene un registro de ingreso activo', 'error');
+            return false;
+        }
+        
+        return true;
+    },
+    
+    // Validar registro de salida
+    validarRegistroSalida(legajo, movilAsignado, estadoMovil) {
+        if (!legajo) {
+            UI.mostrarAlerta('Debe ingresar un legajo', 'error');
+            return false;
+        }
+        
+        if (!movilAsignado) {
+            UI.mostrarAlerta('Debe seleccionar un móvil', 'error');
+            return false;
+        }
+        
+        if (!estadoMovil) {
+            UI.mostrarAlerta('Debe seleccionar el estado del móvil', 'error');
+            return false;
+        }
+        
+        // Validar permisos
+        if (!Auth.usuarioActual.admin && legajo !== Auth.usuarioActual.legajo) {
+            UI.mostrarAlerta('Solo puede registrar salida con su propio legajo', 'error');
+            return false;
+        }
+        
+        // Verificar si el usuario existe
+        const data = Storage.loadData();
+        const usuario = data.usuarios.find(u => u.legajo === legajo && u.activo);
+        if (!usuario) {
+            UI.mostrarAlerta('Legajo no encontrado o usuario inactivo', 'error');
+            return false;
+        }
+        
+        return true;
+    },
+    
+    // Verificar si la guardia fue completada
+    verificarGuardiaCompleta(registro, usuario) {
+        const data = Storage.loadData();
+        const actividad = data.actividades.find(a => a.id === registro.actividad_id);
+        
+        if (actividad && actividad.nombre === "Guardia") {
+            const horasTrabajadas = Utils.calculateHoursDiff(
+                registro.fecha_hora_ingreso, 
+                registro.fecha_hora_salida
+            );
+            
+            const horasRequeridas = data.config.horasGuardiaRequeridas;
+            
+            if (horasTrabajadas < horasRequeridas) {
+                // Agregar notificación
+                data.notificaciones.push({
+                    id: Utils.generateId(),
+                    tipo: 'Guardia Incumplida',
+                    mensaje: `El bombero ${usuario.nombre} no cumplió las ${horasRequeridas} horas de guardia. Horas trabajadas: ${horasTrabajadas.toFixed(2)}`,
+                    usuario_id: usuario.id,
+                    fecha: new Date(),
+                    leida: false
+                });
+                
+                Storage.saveData(data);
+                
+                // Actualizar contador de notificaciones si es admin
+                if (Auth.usuarioActual.admin) {
+                    Admin.actualizarNotificaciones();
+                }
+            }
+        }
+    }
+};
